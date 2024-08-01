@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/drivers")
@@ -20,7 +21,7 @@ public class DriverController {
     private DriverService driverService;
 
     @PostMapping("/add")
-    @PreAuthorize("hasRole('USER')")
+    //@PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> addDriver(@RequestParam("driver") String driverDetails, @RequestParam("licenseFile") MultipartFile licenseFile) {
         try {
             Driver driver = new ObjectMapper().readValue(driverDetails, Driver.class);
@@ -36,6 +37,15 @@ public class DriverController {
         return driverService.getDriverById(driverId)
                 .map(driver -> ResponseEntity.ok(driver))
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+    @GetMapping
+    public ResponseEntity<List<Driver>> getDrivers() {
+        try {
+            List<Driver> drivers = driverService.getAllDrivers();
+            return ResponseEntity.ok(drivers);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
 

@@ -23,7 +23,7 @@ public class RentalController {
     private UserService userService;
 
     @PostMapping("/rent")
-    @PreAuthorize("hasRole('USER')")
+    //@PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> rentCar(
             @RequestParam Long carId,
             @RequestParam Long userId,
