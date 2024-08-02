@@ -27,7 +27,10 @@ public class CarController {
         Optional<Car> car = carService.getCarById(id);
         return car.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
-
+    @GetMapping
+    public List<Car> getAllCars() {
+        return carService.getAllCars();
+    }
     @PostMapping("/admin/add")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> addCar(@RequestParam("file") MultipartFile file, @RequestParam("car") String carDetails) {
@@ -46,7 +49,7 @@ public class CarController {
     }
 
     @PutMapping("/{id}/availability")
-    @PreAuthorize("hasRole('ADMIN')")
+   // @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateCarAvailability(@PathVariable Long id, @RequestBody Map<String, Boolean> availabilityMap) {
         boolean availability = availabilityMap.get("availability");
         Car updatedCar = carService.updateCarAvailability(id, availability);

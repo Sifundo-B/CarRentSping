@@ -10,6 +10,9 @@ import java.util.Optional;
 public interface CarService {
     Car addCar(Car car, MultipartFile file) throws IOException;
     List<Car> getAvailableCars();
+
+    List<Car> getAllCars();
+
     Optional<Car> getCarById(Long id);
     Car updateCarAvailability(Long carId, boolean availability);
 }

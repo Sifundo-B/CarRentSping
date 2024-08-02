@@ -21,8 +21,9 @@ public class JWTUtil {
     @Value("${jwt.access-token-expiration}")
     private long accessTokenExpiration;
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, Long userId) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId); // Add userId to the claims
         return createToken(claims, userDetails.getUsername());
     }
 
@@ -63,5 +64,10 @@ public class JWTUtil {
                 .setSigningKey(secret)
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    // New method to extract userId
+    public Long extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", Long.class));
     }
 }

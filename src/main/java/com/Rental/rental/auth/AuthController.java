@@ -1,7 +1,6 @@
 package com.Rental.rental.auth;
 
 import com.Rental.rental.entity.User;
-import com.Rental.rental.service.UserService;
 import com.Rental.rental.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -30,7 +31,9 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         UserDetails userDetails = userService.loadUserByUsername(authRequest.getEmail());
         if (new BCryptPasswordEncoder().matches(authRequest.getPassword(), userDetails.getPassword())) {
-            String token = jwtUtil.generateToken(userDetails);
+            // Fetch the user entity to get the userId
+            User user = userService.findByEmail(authRequest.getEmail());
+            String token = jwtUtil.generateToken(userDetails, user.getId()); // Pass both userDetails and userId
             return ResponseEntity.ok(new AuthResponse(token));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
