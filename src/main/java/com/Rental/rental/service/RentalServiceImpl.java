@@ -1,5 +1,6 @@
 package com.Rental.rental.service;
 
+import com.Rental.rental.dto.RentalResponse;
 import com.Rental.rental.entity.Car;
 import com.Rental.rental.entity.Driver;
 import com.Rental.rental.entity.Rental;
@@ -13,6 +14,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RentalServiceImpl implements RentalService {
@@ -88,9 +91,56 @@ public class RentalServiceImpl implements RentalService {
         }
         return totalPrice;
     }
-
     @Override
-    public List<Rental> getRentalsByUser(User user) {
-        return rentalRepository.findByUser(user);
+    public Rental getRentalById(Long rentalId) {
+        Optional<Rental> rental = rentalRepository.findById(rentalId);
+        if (rental.isPresent()) {
+            Rental rentalEntity = rental.get();
+            // Force loading of related entities
+            rentalEntity.getUser().getFirstName(); // Access user details to force load
+            rentalEntity.getUser().getEmail();
+            rentalEntity.getCar().getMake(); // Access car details to force load
+            rentalEntity.getCar().getModel();
+            rentalEntity.getCar().getType();
+            rentalEntity.getCar().getRentalPrice();
+            return rentalEntity;
+        }
+        return null; // Return null if rental not found
     }
+    @Override
+    public RentalResponse convertToRentalResponse(Rental rental) {
+        RentalResponse rentalResponse = new RentalResponse();
+        rentalResponse.setRentalId(rental.getId());
+        rentalResponse.setCarId(rental.getCar().getId());
+        rentalResponse.setUserId(rental.getUser().getId());
+        rentalResponse.setDriverId(rental.getDriver() != null ? rental.getDriver().getId() : null);
+        rentalResponse.setPickUpLocation(rental.getPickUpLocation());
+        rentalResponse.setDropOffLocation(rental.getDropOffLocation());
+        rentalResponse.setStartDate(rental.getRentalStartDate().toString());
+        rentalResponse.setEndDate(rental.getRentalEndDate().toString());
+        rentalResponse.setTotalPrice(rental.getTotalPrice().toString());
+
+        // Populate user details
+        User user = rental.getUser();
+        rentalResponse.setUserFirstName(user.getFirstName());
+        rentalResponse.setUserLastName(user.getLastName());
+        rentalResponse.setUserEmail(user.getEmail());
+
+        // Populate car details
+        Car car = rental.getCar();
+        rentalResponse.setCarMake(car.getMake());
+        rentalResponse.setCarModel(car.getModel());
+        rentalResponse.setCarType(car.getType());
+        rentalResponse.setCarRentalPrice(car.getRentalPrice().toString());
+
+        return rentalResponse;
+    }
+    @Override
+    public List<RentalResponse> getRentalsByUser(User user) {
+        List<Rental> rentals = rentalRepository.findByUser(user);
+        return rentals.stream()
+                .map(this::convertToRentalResponse)
+                .collect(Collectors.toList());
+    }
+
 }
